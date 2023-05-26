@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useRouter } from "next/router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 export default function FormLayout({
   _id,
@@ -8,16 +8,20 @@ export default function FormLayout({
   description: existingDescription,
   price: existingPrice,
   images: existingImages,
+  category: existingCategory,
 }) {
   const [title, setTitle] = useState(existingTitle);
-  const [description, setDescription] = useState(existingDescription);
-  const [price, setPrice] = useState(existingPrice);
+  const [description, setDescription] = useState(existingDescription || "");
+  const [price, setPrice] = useState(existingPrice || "");
   const [images, setImages] = useState(existingImages);
+  const [categories, setCategories] = useState([]);
+  const [category, setCategory] = useState(existingCategory || "");
+
   const [goToProduct, setGoToProduct] = useState(false);
   const router = useRouter();
   const addProduct = async (e) => {
     e.preventDefault();
-    const data = { title, description, price };
+    const data = { title, description, price, category };
     if (_id) {
       await axios.put("/api/products", { ...data, _id });
     } else {
@@ -37,12 +41,16 @@ export default function FormLayout({
         data.append("file", file);
       }
       const res = await axios.post("/api/upLoadFile", data);
-      console.log("🚀 ~ file: FormLayout.js:39 ~ uploadImage ~ res:", res.data);
       setImages((pre) => {
-        return [...prev, ...res.data.links];
+        return [...pre, ...res.data.links];
       });
     }
   }
+  useEffect(() => {
+    axios.get("/api/categories").then((response) => {
+      setCategories(response.data);
+    });
+  }, []);
   return (
     <form className="m-4" onSubmit={addProduct}>
       <label>Name</label>
@@ -52,6 +60,21 @@ export default function FormLayout({
         value={title}
         onChange={(e) => setTitle(e.target.value)}
       />
+      <div className="flex flex-col gap-1">
+        <label>Category</label>
+        <select
+          className="mb-0 rounded-lg h-7 cursor-pointer"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+        >
+          <option>unOption</option>
+          {categories?.map((category) => (
+            <option key={category._id} value={category._id}>
+              {category?.categoryName}
+            </option>
+          ))}
+        </select>
+      </div>
       <label>Photos</label>
       <div className="mb-2">
         {!!images?.length && images.map((link) => <div key={link}>{link}</div>)}
