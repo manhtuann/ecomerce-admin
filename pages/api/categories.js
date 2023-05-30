@@ -1,9 +1,11 @@
 import { mongooseConnect } from "@/lib/mongoose";
 import { Category } from "@/models/categories";
+import { isAdminRequest } from "./auth/[...nextauth]";
 
 export default async function handle(req, res, next) {
   const { method } = req;
   await mongooseConnect();
+  await isAdminRequest(req, res);s
 
   if (method === "POST") {
     const { categoryName, categoryOption, properties } = req.body;

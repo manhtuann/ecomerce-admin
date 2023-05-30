@@ -15,6 +15,7 @@ export default function FormLayout({
   const [price, setPrice] = useState(existingPrice || "");
   const [images, setImages] = useState(existingImages);
   const [categories, setCategories] = useState([]);
+  console.log("🚀 ~ file: FormLayout.js:18 ~ categories:", categories);
   const [category, setCategory] = useState(existingCategory || "");
 
   const [goToProduct, setGoToProduct] = useState(false);
@@ -51,6 +52,22 @@ export default function FormLayout({
       setCategories(response.data);
     });
   }, []);
+
+  const propertiesFill = [];
+
+  if (categories?.length > 0 && category) {
+    let newData = categories.find((c) => c._id === category);
+    console.log("🚀 ~ file: FormLayout.js:60 ~ newData:", newData);
+    propertiesFill.push(...newData.properties);
+    console.log(newData.parent._id, "abc");
+    // while (newData?.parent?._id) {
+    // const parentCat = categories.find((c) => c._id === newData.parent._id);
+    // propertiesFill.push(...parentCat.properties);
+    // newData = parentCat;
+    // }
+  }
+  console.log("🚀 ~ file: FormLayout.js:57 ~ propertiesFill:", propertiesFill);
+
   return (
     <form className="m-4" onSubmit={addProduct}>
       <label>Name</label>
@@ -74,6 +91,17 @@ export default function FormLayout({
             </option>
           ))}
         </select>
+      </div>
+      <div className="flex flex-col">
+        {propertiesFill.length > 0 &&
+          propertiesFill.map((item) => {
+            return (
+              <div key={item.name} className="flex flex-col">
+                <label className="font-medium">{item.name} :</label>
+                <input type="text" value={item.value} />
+              </div>
+            );
+          })}
       </div>
       <label>Photos</label>
       <div className="mb-2">
